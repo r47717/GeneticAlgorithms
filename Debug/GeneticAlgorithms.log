@@ -1,0 +1,6 @@
+﻿  world.cpp
+c:\users\r47717\documents\visual studio 2015\projects\geneticalgorithms\world.cpp(18): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
+  creature.cpp
+  GeneticAlgorithms.cpp
+  Создание кода...
+  GeneticAlgorithms.vcxproj -> C:\Users\r47717\Documents\Visual Studio 2015\Projects\GeneticAlgorithms\Debug\GeneticAlgorithms.exe
