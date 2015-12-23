@@ -14,17 +14,17 @@
 
 
 World::World(std::function<int(std::vector<int>)> f)
-	: creatures(CREATURES_NUM), func(f)
+	: func(f)
 {
 	srand(std::time(0));
 
 	for (int i = 0; i < HEIGHT; i++)
 		for (int j = 0; j < WIDTH; j++)
-			field[i][j] = 0;
+			field[i][j] = nullptr;
 
 	std::unique_lock<std::mutex> lck(fieldMutex);
 
-	for (auto p = creatures.begin(); p != creatures.end(); p++) {
+	for (int i = 0; i < CREATURES_NUM; i++) {
 		int x = 0;
 		int y = 0;
 		do {
@@ -32,8 +32,9 @@ World::World(std::function<int(std::vector<int>)> f)
 			y = random_n_m(0, HEIGHT - 1);
 		} while (!isEmpty(x, y));
 
-		*p = new Creature(x, y, this);
-		occupy(x, y);
+		Creature* cr = new Creature(x, y, this);
+		creatures.push_back(cr);
+		occupy(x, y, cr);
 	}
 }
 
@@ -52,12 +53,6 @@ void World::printAll()
 		std::cout << "\n";
 	}
 		
-}
-
-void World::timeTick()
-{
-	runMutation();
-	runCrossover();
 }
 
 void World::evaluateBest()
@@ -84,7 +79,7 @@ void World::printField()
 {
 	for (int i = 0; i < HEIGHT; i++) {
 		for (int j = 0; j < WIDTH; j++)
-			std::cout << field[i][j];
+			std::cout << (field[i][j] == nullptr ? 0 : 1);
 		std::cout << "\n";
 	}
 	std::cout << "\n";
@@ -92,36 +87,21 @@ void World::printField()
 
 bool World::isEmpty(int x, int y)
 {
-	return x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && field[y][x] == 0;
+	return x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && field[y][x] == nullptr;
 }
 
-void World::occupy(int x, int y)
+void World::occupy(int x, int y, Creature* cr)
 {
-	field[y][x] = 1;
+	field[y][x] = cr;
 	//std::cout << "field (" << y << ", " << x << ") occupied\n";
 }
 
 void World::release(int x, int y) {
-	field[y][x] = 0;
+	field[y][x] = nullptr;
 }
 
-
-void World::runMutation() 
-{
-	int size = creatures.size();
-	for (int i = 0; i < size; i++) {
-		if(i != bestIndex)
-			creatures[i]->mutate(mutationRate);  // best creatures never mutate
-	}
-}
-
-void World::runCrossover()
-{
-	int one = random_n_m(0, CREATURES_NUM - 1);
-	int two = random_n_m(0, CREATURES_NUM - 1); // if one == two then no problem, don't care
-
-	if(rand() > RAND_MAX / 2)
-		creatures[one]->crossover(*creatures[two]);
+Creature* World::getOccupant(int x, int y) {
+	return (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT) ? field[y][x] : nullptr;
 }
 
 int random_n_m(int n, int m)

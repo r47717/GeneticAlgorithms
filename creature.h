@@ -6,11 +6,14 @@ class Creature
 {
 public:
 	const int DNA_LEN = 50;
+	const int CROSSOVER_RATIO = 10;
+	const int MUTATION_RATIO = 20;
+
 	Creature(int x, int y, World*);
 	Creature(Creature&);
 	~Creature();
 
-	void mutate(int rate);
+	void mutate();
 	void crossover(Creature& other);
 	Creature child();
 
@@ -19,6 +22,7 @@ public:
 	void print();
 
 	void move();
+	bool isReadyForCrossover();
 
 private:
 	std::vector<int> dna;
@@ -27,6 +31,9 @@ private:
 	World* field;
 	int x;
 	int y;
+
+	int readyForCrossover = CROSSOVER_RATIO;
+	int readyForMutation = MUTATION_RATIO;
 
 };
 

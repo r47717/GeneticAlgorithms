@@ -10,7 +10,6 @@ public:
 
 	void printAll();
 
-	void timeTick();
 	void evaluateBest();
 	void printBest();
 
@@ -18,27 +17,23 @@ public:
 
 	bool isEmpty(int x, int y);
 	std::mutex fieldMutex;
-	void occupy(int x, int y);
-	void release(int x, int y);
+	void occupy(int x, int y, Creature*);
+	void release(int x, int y); 
+	Creature* getOccupant(int x, int y);
 
 	bool simulationStopped = false;
 
 private:
-	static const int CREATURES_NUM = 20;
+	static const int CREATURES_NUM = 10;
 	static const int WIDTH = 30;
 	static const int HEIGHT = 30;
-	int field[HEIGHT][WIDTH];
+	Creature* field[HEIGHT][WIDTH];
 
 	std::vector<Creature *> creatures;
 	std::function<int(std::vector<int>)> func;
 
 	int best;
 	int bestIndex = -1;
-
-	int mutationRate = 100;
-
-	void runMutation();
-	void runCrossover();
 
 };
 

@@ -21,10 +21,14 @@ int main()
 		return sum;
 	});
 
-	for (int i = 0; i < 30; i++) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1200));
-		world.printField();
+	world.printField();
+
+	for (int i = 0; i < 60; i++) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		//world.printField();
 	}
+
+	world.printField();
 
 	world.simulationStopped = true;
 

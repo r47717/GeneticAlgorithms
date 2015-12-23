@@ -30,15 +30,11 @@ Creature::~Creature()
 	thread.join();
 }
 
-void Creature::mutate(int rate)
+void Creature::mutate()
 {
 	int bit = random_n_m(0, DNA_LEN - 1);
-	double p = double(rand()) / RAND_MAX * rate;
-	if (p < 1) {
-		dna[bit] = dna[bit] == 1 ? 0 : 1;
-		//std::cout << "\nbit mutated\n";
-	}
-		
+	dna[bit] = dna[bit] == 1 ? 0 : 1;
+	//std::cout << "\nbit mutated\n";
 }
 
 void Creature::crossover(Creature& other)
@@ -81,6 +77,17 @@ void Creature::move() // creature thread runs this method
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // sleep for 1 sec (it is so easy in C++...)
 
+		if (this->readyForCrossover < CROSSOVER_RATIO)
+			this->readyForCrossover++;
+
+		if (this->readyForMutation <= MUTATION_RATIO)
+			this->readyForMutation++;
+		else {
+			//this->mutate();
+			//readyForMutation = 0;
+			//std::cout << "I mutated...\n";
+		}
+
 		std::unique_lock<std::mutex> lck(field->fieldMutex);
 
 		int dir = dice_roller(); // randomly select a direction 1 - 8
@@ -119,22 +126,44 @@ void Creature::move() // creature thread runs this method
 				y--;
 				break;
 			}
-			if (field->isEmpty(x, y)) // found free direction
+			if (field->isEmpty(x, y)) // follow this free direction
 				break;
 		
+			if (this->isReadyForCrossover()) {
+				Creature* occupant = field->getOccupant(x, y);
+				if (occupant != nullptr) { 
+					if (occupant->isReadyForCrossover()) {
+						this->crossover(*occupant);
+						this->readyForCrossover = 0;
+						occupant->readyForCrossover = 0;
+						cnt = 8;
+						std::cout << "We just had a crossover...\n";
+						break;
+					}
+					else {
+						//std::cout << "I wanted crossover but he was not ready...\n";
+					}
+				}
+			}			
+			
 			dir++; // this direction is busy - change dir
 			if (dir == 9) 
 				dir = 1;
 	
-		} while (++cnt < 8); // ctn == 8 means all 8 directions are busy - do not move
+		} while (++cnt < 8);
 	
-		if (cnt < 8) {
+		if (cnt < 8) {  // ctn == 8 means all 8 directions are busy (or a crossover happened) - do not move
 			field->release(this->x, this->y);
-			field->occupy(x, y);
+			field->occupy(x, y, this);
 			this->x = x;
 			this->y = y;
 		}
 	}
+}
+
+bool Creature::isReadyForCrossover()
+{
+	return readyForCrossover >= CROSSOVER_RATIO;
 }
 
 
