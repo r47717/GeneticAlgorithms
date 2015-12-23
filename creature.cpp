@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <random>
 #include <iostream>
 #include <cstdlib>
 #include "world.h"
@@ -67,18 +68,23 @@ void Creature::print()
 
 void Creature::move() // creature thread runs this method
 {
-	int x;
-	int y;
-	int cnt = 0;
+	std::uniform_int_distribution<int> dice_distribution(1, 8);
+	std::mt19937 random_number_engine;
+	random_number_engine.seed(this->x * this->y * random_n_m(1, 1000));
+	auto dice_roller = std::bind(dice_distribution, random_number_engine);
 
 	while (!field->simulationStopped) 
 	{
+
+		int x;
+		int y;
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // sleep for 1 sec (it is so easy in C++...)
 
 		std::unique_lock<std::mutex> lck(field->fieldMutex);
 
-		int dir = random_n_m(1, 4); // randomly select a direction
+		int dir = dice_roller(); // randomly select a direction 1 - 8
+		int cnt = 0;
 
 		do {
 			x = this->x;
@@ -87,26 +93,43 @@ void Creature::move() // creature thread runs this method
 			case 1: // up
 				y--;
 				break;
-			case 2: // right
+			case 2: // up-right
+				y--;
 				x++;
 				break;
-			case 3: // down
+			case 3: // right
+				x++;
+				break;
+			case 4: // right-down
+				x++;
 				y++;
 				break;
-			case 4: // left
+			case 5: // down
+				y++;
+				break;
+			case 6: // down-left
 				x--;
+				y++;
+				break;
+			case 7: // left
+				x--;
+				break;
+			case 8: // up-left
+				x--;
+				y--;
 				break;
 			}
 			if (field->isEmpty(x, y)) // found free direction
 				break;
 		
-			dir++;
-			if (dir == 5) // this direction is busy - change dir
+			dir++; // this direction is busy - change dir
+			if (dir == 9) 
 				dir = 1;
 	
-		} while (++cnt < 4); // ctn == 4 means all 4 directions are busy
+		} while (++cnt < 8); // ctn == 8 means all 8 directions are busy - do not move
 	
-		if (cnt < 4) {
+		if (cnt < 8) {
+			field->release(this->x, this->y);
 			field->occupy(x, y);
 			this->x = x;
 			this->y = y;

@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <random>
 #include <memory>
 #include <iostream>
 #include <cstdlib>
@@ -20,12 +21,20 @@ int main()
 		return sum;
 	});
 
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 30; i++) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+		world.printField();
+	}
+
+	world.simulationStopped = true;
+
+
+	/*for (int i = 0; i < 1000; i++) {
 		cout << "Time: " << i << "\n";
 		world.evaluateBest();
 		world.printBest();
 		world.timeTick();
-	}
+	}*/
 
 	return 0;
 }

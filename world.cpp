@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <random>
 #include <ctime>
 #include <iostream>
 #include <cstdlib>
@@ -17,7 +18,7 @@ World::World(std::function<int(std::vector<int>)> f)
 {
 	srand(std::time(0));
 
-	for (int i = 0; i < HEIGHT * WIDTH; i++)
+	for (int i = 0; i < HEIGHT; i++)
 		for (int j = 0; j < WIDTH; j++)
 			field[i][j] = 0;
 
@@ -32,6 +33,7 @@ World::World(std::function<int(std::vector<int>)> f)
 		} while (!isEmpty(x, y));
 
 		*p = new Creature(x, y, this);
+		occupy(x, y);
 	}
 }
 
@@ -78,6 +80,16 @@ void World::printBest()
 	std::cout << "Best in population: #" << bestIndex << " value = " << best << "\n";
 }
 
+void World::printField()
+{
+	for (int i = 0; i < HEIGHT; i++) {
+		for (int j = 0; j < WIDTH; j++)
+			std::cout << field[i][j];
+		std::cout << "\n";
+	}
+	std::cout << "\n";
+}
+
 bool World::isEmpty(int x, int y)
 {
 	return x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && field[y][x] == 0;
@@ -86,7 +98,13 @@ bool World::isEmpty(int x, int y)
 void World::occupy(int x, int y)
 {
 	field[y][x] = 1;
+	//std::cout << "field (" << y << ", " << x << ") occupied\n";
 }
+
+void World::release(int x, int y) {
+	field[y][x] = 0;
+}
+
 
 void World::runMutation() 
 {
@@ -108,5 +126,6 @@ void World::runCrossover()
 
 int random_n_m(int n, int m)
 {
-	return rand()*(m - n) / RAND_MAX + n;
+	//return rand()*(m - n) / RAND_MAX + n;
+	return n + static_cast<int>(std::round(double(rand())/RAND_MAX * (m - n)));
 }

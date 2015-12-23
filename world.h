@@ -14,17 +14,19 @@ public:
 	void evaluateBest();
 	void printBest();
 
+	void printField();
+
 	bool isEmpty(int x, int y);
 	std::mutex fieldMutex;
 	void occupy(int x, int y);
+	void release(int x, int y);
 
 	bool simulationStopped = false;
 
-
 private:
-	static const int CREATURES_NUM = 30;
-	static const int WIDTH = 50;
-	static const int HEIGHT = 50;
+	static const int CREATURES_NUM = 20;
+	static const int WIDTH = 30;
+	static const int HEIGHT = 30;
 	int field[HEIGHT][WIDTH];
 
 	std::vector<Creature *> creatures;
